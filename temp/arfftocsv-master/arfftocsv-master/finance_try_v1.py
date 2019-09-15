@@ -1,3 +1,5 @@
+from utils.util_my import read_close_datasets
+
 import scipy.io
 import numpy as np
 import pandas as pd
@@ -8,29 +10,37 @@ import FinanceDataReader as fdr
 from sklearn.model_selection import train_test_split
 
 # ----------------------------------------------------------------------------
-# Samsung
-# samsung = fdr.DataReader('068270', '2005-07-19', '2019-09-01')
-lg = fdr.DataReader('066570', '2005-07-19', '2019-09-01')
-s_c = lg.reset_index()['Close'].tolist()
-
+# SELECT stock : samsung, lg, naver, kakao, kospi200
+stock_name = 'samsung'
+input_stock = read_close_datasets(stock_name)
+# SELECT column : 'Open', 'Close', 'High', 'Low', 'Volume'
+column_name = 'Close'
+# SELECT Length and Distance
 data_length = 70  # day length for one sliced data
+gap_distance = 7  # gap of time series data
+
+
+# univariate learning with 'Close' data
+close_raw = input_stock.reset_index()['Close'].tolist()
+
 after1_full = []
 after3_full = []
 after7_full = []
-# 전수저장
-s_c_full = []
-for i in range(3494-data_length-6):
-    s_c_full.append(s_c[0+i: data_length+i])
 
-# 7간격으로 데이터 추출
-s_c_7 = []
-for i in range(int((3494-data_length-6)/7)):
-    s_c_7.append(s_c[0+i*7: data_length+i*7])
+# univariate time series data for learnings
+close_data = []
+for i in range(len(input_stock)-data_length-6):
+    close_data.append(close_raw[0+i: data_length+i])
+
+# univariate time series data with gap_distance for learnings
+close_divided = []
+for i in range(int((len(input_stock)-data_length-6)/gap_distance)):
+    close_divided.append(close_raw[0+i*gap_distance : data_length+i*gap_distance])
 
 
-# print('s_c_7', len(s_c_7))
+# print('close_divided', len(close_divided))
 normalized = []
-for data in s_c_7:
+for data in close_divided:
     normalized.append([a/data[-1] for a in data])
 
 normalized = pd.DataFrame(normalized)
@@ -38,11 +48,11 @@ normalized = pd.DataFrame(normalized)
 
 
 # 여기 아래는 수정필요
-for i in range(int(len(s_c_full)/7)):
-    k = i*7
-    after1_full.append((s_c[data_length+k]-s_c_full[k][-1]) / s_c_full[k][-1] * 100)
-    after3_full.append((s_c[data_length+k+2]-s_c_full[k][-1]) / s_c_full[k][-1] * 100)
-    after7_full.append((s_c[data_length+k+6]-s_c_full[k][-1]) / s_c_full[k][-1] * 100)
+for i in range(int(len(close_data)/gap_distance)):
+    k = i*gap_distance
+    after1_full.append((close_raw[data_length+k]-close_data[k][-1]) / close_data[k][-1] * 100)
+    after3_full.append((close_raw[data_length+k+2]-close_data[k][-1]) / close_data[k][-1] * 100)
+    after7_full.append((close_raw[data_length+k+6]-close_data[k][-1]) / close_data[k][-1] * 100)
 
 # after7_full
 # print(after7_full)
@@ -194,26 +204,27 @@ def read_dataset(root_dir, archive_name, dataset_name):
 
 def create_directory(directory_path):
     if os.path.exists(directory_path):
+        print('Result Folder Already Exist!!')
         return None
     else:
         try:
             os.makedirs(directory_path)
         except:
             # in case another machine created the path meanwhile !:(
+            print('Something wrong to make folder??')
             return None
         return directory_path
 
 
 classifier_name = 'mlp'
-archive_name = 'ucr'
-itr = '_itr_1'
-dataset_name = 'mlp_L_3_1_70_7'
+analysis_name = 'univariate'
+dataset_name = 'mlp_L_3_1_70_'
 root_dir = os.getcwd()
 output_directory = 'D:/python/dl-4-tsc/arfftocsv-master/arfftocsv-master/results/'+classifier_name+'/'+archive_name+itr+'/'+\
                    dataset_name+'/'
 print('output_directory', output_directory)
 
-output_directory = create_directory(output_directory)
+# output_directory = create_directory(output_directory)
 # output_directory = 'D:/python/dl-4-tsc/arfftocsv-master/arfftocsv-master/results/fcn/ucr_itr_1/'+dataset_name+'/'
 
 print('Method: ', archive_name, dataset_name, classifier_name, itr)
@@ -257,8 +268,8 @@ if len(x_train.shape) == 2:  # if univariate
 input_shape = x_train.shape[1:]
 
 print('output_directory', output_directory)
-classifier = create_classifier(classifier_name, input_shape, nb_classes, output_directory)
-classifier.fit(x_train, y_train, x_test, y_test, y_true)
+# classifier = create_classifier(classifier_name, input_shape, nb_classes, output_directory)
+# classifier.fit(x_train, y_train, x_test, y_test, y_true)
 
 # print(y_train)
 # print(nb_classes)
