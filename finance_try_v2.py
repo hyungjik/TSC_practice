@@ -39,7 +39,7 @@ output_directory = create_directory(output_directory)
 # preprocessing finance data for deep learning algorithm
 final_data = univariate_data_preprocessing(input_stock, column_name, data_length, gap_distance, percent_boundary)
 
-df_train, df_test = train_test_split(final_data, test_size=0.5, random_state=0)
+df_train, df_test = train_test_split(final_data, test_size=0.5, random_state=3)
 y_train = df_train.values[:, 0]
 x_train = df_train.values[:, 1:]
 y_test = df_test.values[:, 0]
