@@ -24,7 +24,7 @@ gap_distance = 7  # gap of time series data
 # SELECT column : 'Open', 'Close', 'High', 'Low', 'Volume'
 column_name = 'Close'
 # SELECT what percentage you define increase and decrease boundary
-percent_boundary = 3
+percent_boundary = 6
 # SELECT algorithm : 'fcn','mlp','resnet','cnn','mcnn','mcdcnn','twiesn','tlenet','encoder'
 classifier_name = 'mlp'
 
